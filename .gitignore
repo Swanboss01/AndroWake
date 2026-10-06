@@ -1,0 +1,7 @@
+__pycache__/
+build/
+dist/
+platform-tools/
+scrcpy/
+*.spec
+AndroWakeSetup.exe
