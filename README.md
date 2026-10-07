@@ -1,56 +1,84 @@
+**English** | [Français](README.fr.md)
+
 # AndroWake
 
-Logiciel Windows pour piloter un appareil Android depuis le PC via **adb**, avec une interface simple (Python + Tkinter).
+A Windows desktop tool to control an Android device from your PC through **adb**, with a simple graphical interface (Python + Tkinter). It detects devices in Android, Recovery, Sideload and Bootloader (fastboot) modes, and bundles the everyday tasks — screenshots, app management, file transfer, remote control, screen mirroring, logcat — in one window.
 
-## Installation
+## Download & install
 
-1. Téléchargez `AndroWakeSetup.exe` dans l'onglet [Releases](https://github.com/Swanboss01/AndroWake/releases).
-2. Lancez l'installeur (aucun droit administrateur requis : installation dans `%LOCALAPPDATA%\AndroWake`).
-3. Au premier lancement, AndroWake propose de télécharger **adb** (platform-tools de Google) dans son dossier.
+1. Download `AndroWakeSetup.exe` from the [Releases](https://github.com/Swanboss01/AndroWake/releases) page.
+2. Run the installer. No administrator rights are needed: AndroWake installs into `%LOCALAPPDATA%\AndroWake`, so it can download its tools next to itself.
+3. On first launch, AndroWake offers to download **adb** (Google's official `platform-tools`) into its own folder. Nothing is installed system-wide and your `PATH` is untouched.
 
-Sur le téléphone, activez le **débogage USB** (Options pour les développeurs) puis acceptez l'empreinte RSA à la première connexion.
+On the phone:
 
-## Fonctionnalités
+1. Enable **Developer options** (tap *Build number* seven times in *Settings → About phone*).
+2. Enable **USB debugging**.
+3. Plug in the USB cable and accept the RSA fingerprint prompt the first time.
 
-| | |
+## Features
+
+| Area | What you get |
 |---|---|
-| **Détection** | Appareils en mode Android, Recovery, Sideload et Bootloader (fastboot), actualisés automatiquement |
-| **Écran** | Réveil, veille, mode « rester éveillé », capture d'écran |
-| **Infos** | Marque, modèle, version d'Android, SDK, batterie |
-| **Applications** | Gestionnaire (recherche, lancer, forcer l'arrêt, vider les données, extraire l'APK, désinstaller), installation d'APK |
-| **Fichiers** | Envoi (push) et récupération (pull) |
-| **Recovery** | Sideload de ZIP |
-| **Redémarrage** | Normal, recovery, bootloader (adb ou fastboot selon le mode) |
-| **Connexion** | Wi-Fi ADB en un clic, ou par adresse IP |
-| **Télécommande** | Touches (Retour, Accueil, Volume…), saisie de texte, URL, tap et swipe |
-| **Miroir d'écran** | Via [scrcpy](https://github.com/Genymobile/scrcpy), téléchargé à la demande |
-| **Logcat** | Filtre par niveau et mot-clé, couleurs, export |
-| **Shell** | Champ de commande `adb shell` |
-| **Interface** | Thème clair / sombre |
+| **Device detection** | Lists devices in *Android*, *Recovery*, *Recovery (sideload)*, *Bootloader (fastboot)*, *Unauthorized* and *Offline* states. The list refreshes automatically every 3 seconds. |
+| **Screen** | Wake the screen, put the device to sleep, toggle *stay awake* while charging, save a screenshot as PNG. |
+| **Device info** | Brand, model, Android version, SDK level, build ID, CPU ABI, battery status. |
+| **App manager** | Search installed apps, show system apps, launch, force-stop, clear data, extract the APK, uninstall (with confirmation). Install APKs from disk. |
+| **Files** | Push a file to `/sdcard/Download/`, pull any path from the device. |
+| **Recovery** | Sideload a ZIP while the device is in recovery (*Apply update from ADB*). |
+| **Reboot** | Normal, recovery or bootloader. Uses adb or fastboot depending on the device mode. |
+| **Connection** | One-click **Wi-Fi ADB** (reads the device IP, enables `adb tcpip`, connects), or connect by IP address. |
+| **Remote control** | Back, Home, Recents, Volume, Power, D-pad, media keys, notifications; text input; open a URL; tap and swipe by coordinates. |
+| **Screen mirroring** | Powered by [scrcpy](https://github.com/Genymobile/scrcpy), downloaded on demand into the AndroWake folder. |
+| **Logcat** | Live stream with minimum level, keyword filter applied on the fly, coloured warnings/errors, clear and export to a text file. |
+| **Shell** | An `adb shell` command line with output in the main log. |
+| **Interface** | Light and dark themes. All adb calls run in background threads, so the window never freezes. |
 
-## Depuis les sources
+## Typical workflows
 
-Prérequis : Python 3.10+ (Tkinter inclus).
+- **Go wireless:** plug the phone in over USB → *Wi-Fi ADB in one click* → unplug the cable.
+- **Debug an app:** pick the minimum log level, type part of your package name in the keyword box, press *Start*, then *Export* when done.
+- **Flash an update zip:** reboot to recovery, choose *Apply update from ADB* on the device, then use *Sideload ZIP*.
+
+## Requirements
+
+- Windows 10 or 11 (64-bit)
+- An Android device with USB debugging enabled
+- Internet access on first launch (to fetch adb, and scrcpy if you use mirroring)
+
+## Run from source
+
+Requires Python 3.10+ with Tkinter (included in the standard Windows installer).
 
 ```
+git clone https://github.com/Swanboss01/AndroWake.git
+cd AndroWake
 python androwake.py
 ```
 
-Créer l'exécutable puis l'installeur (Pillow pour l'icône, [NSIS](https://nsis.sourceforge.io) pour l'installeur) :
+Build the executable and the installer (needs Pillow for the icon and [NSIS](https://nsis.sourceforge.io)):
 
 ```
-python make_icon.py        # génère icon.ico
+python make_icon.py        # generates icon.ico
 python build_exe.py        # dist/AndroWake/AndroWake.exe (PyInstaller)
 makensis installer.nsi     # AndroWakeSetup.exe
 ```
 
-## Structure
+## Project layout
 
-- `androwake.py` : interface principale
-- `tools.py` : gestionnaire d'apps et télécommande
-- `adb_client.py` : enveloppe adb/fastboot, téléchargement d'adb et de scrcpy
-- `installer.nsi` : script de l'installeur NSIS
+| File | Role |
+|---|---|
+| `androwake.py` | Main window: device list, actions, logcat, theme |
+| `tools.py` | App manager and remote control windows |
+| `adb_client.py` | adb/fastboot wrapper, adb and scrcpy downloaders |
+| `make_icon.py` | Generates `icon.ico` |
+| `build_exe.py` | PyInstaller build script |
+| `installer.nsi` | NSIS installer script |
 
-## Avertissement
+## Warning
 
-Les actions de redémarrage, de désinstallation, de suppression de données et de sideload sont irréversibles ou peuvent bloquer un appareil. Utilisez AndroWake à vos risques, sur vos propres appareils.
+Reboot, uninstall, clear-data and sideload actions can be irreversible or leave a device unbootable. Use AndroWake on your own devices and at your own risk.
+
+## Credits
+
+AndroWake downloads Google's [Android platform-tools](https://developer.android.com/tools/releases/platform-tools) and Genymobile's [scrcpy](https://github.com/Genymobile/scrcpy) at runtime; both remain under their own licenses.
